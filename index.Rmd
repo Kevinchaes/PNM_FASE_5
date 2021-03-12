@@ -271,7 +271,7 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$positivos, big.mark =
 )
 ```
 
-### Casos activos {.value-box}
+### Campaña 2 {.value-box}
 ```{r}
 valueBox(value = paste(format(df_general_pais_ultima_fecha$activos, big.mark = ","), " (",
                        round(100 * df_general_pais_ultima_fecha$activos / df_general_pais_ultima_fecha$positivos, 1), 
@@ -282,7 +282,7 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$activos, big.mark = "
 )
 ```
 
-### Casos recuperados {.value-box}
+### Campaña 3 {.value-box}
 ```{r}
 valueBox(value = paste(format(df_general_pais_ultima_fecha$RECUPERADOS, big.mark = ","), " (",
                        round(100 * df_general_pais_ultima_fecha$RECUPERADOS / df_general_pais_ultima_fecha$positivos, 1), 
@@ -293,7 +293,7 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$RECUPERADOS, big.mark
 )
 ```
 
-### Casos fallecidos {.value-box}
+### Campaña 4 {.value-box}
 ```{r}
 valueBox(value = paste(format(df_general_pais_ultima_fecha$fallecidos, big.mark = ","), " (",
                        round(100 * df_general_pais_ultima_fecha$fallecidos / df_general_pais_ultima_fecha$positivos, 1), 
@@ -336,7 +336,7 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","
 )
 ```
 
-### **Ubicación geográfica 
+### Ubicación geográfica {.value-box}
 ```{r}
 valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","), " (",
                        round(100 * df_general_pais_ultima_fecha$salon / df_general_pais_ultima_fecha$hospital, 1), 
@@ -347,7 +347,7 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","
 )
 ```
 
-### **Coordenadas
+### Coordenadas {.value-box}
 ```{r}
 valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","), " (",
                        round(100 * df_general_pais_ultima_fecha$salon / df_general_pais_ultima_fecha$hospital, 1), 
@@ -362,19 +362,6 @@ Row {data-width=400}
 -----------------------------------------------------------------------
 
 ### Mapa de ubicación del punto
-### Campaña 1 {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$positivos, big.mark = ","), "", sep = " "), 
-         caption = "Total de casos positivos", 
-         icon = icono_positivos, 
-         color = color_positivos
-)
-```
-
-Row {data-width=400}
------------------------------------------------------------------------
-
-### Mapa de casos positivos en distritos
 ```{r}
 
 paleta_azul <- colorBin(palette = "Blues", 
@@ -414,16 +401,10 @@ leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>%
 leaflet_distritos
 ```
 
-### **Lista con todos los puntos de monitoreo de la cuenca**
-```{r}
-st_drop_geometry(sf_general_distritos_ultima_fecha) %>% 
-  select(Código = provincia, Cuenca = canton, Ubicación = distrito, Positivos = positivos, Activos = activos, Recuperados = recuperados, Fallecidos = fallecidos) %>%
-  DT::datatable(rownames = FALSE,
-                options = list(searchHighlight = TRUE, 
-                               language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
-                               )
-  )
-```
+
+### **Información de los datos publicados**
+**1. El monitoreo de los cuerpos de agua superficiales y la clasificación de su calidad se realizó según:**<br>Decreto N° 33903-MINAE-S. REGLAMENTO PARA LA EVALUACIÓN Y CLASIFICACION DE LA CALIDAD DE CUERPOS DE AGUA SUPERFICIALES.<br>Plan nacional de monitoreo de la calidad de los cuerpos de agua superficiales.<br>Programa nacional de monitoreo de la calidad de los cuerpos de agua del país.<br>**2. Para una mejor interpretación de los resultados, se aclara:**
+
 
 Campaña 1
 =======================================================================
