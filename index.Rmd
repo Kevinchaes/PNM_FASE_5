@@ -26,19 +26,19 @@ color_camp_2 <- 'red'
 color_camp_3 <- 'green'
 color_camp_4 <- 'purple'
 
-color_info <- 'grey'
+color_info <- 'pink'
 
 
 #--------------------- Íconos ---------------------
 
-icono_camp_1 <- 'fas fa-code'
-icono_activos <- 'fas fa-briefcase-medical'
-icono_recuperados <- 'fas fa-file-medical'
-icono_fallecidos <- 'fas fa-plus'
-icono_nuevos_positivos <- 'fas fa-user-md'
-icono_hospitalizados <- 'fas fa-hospital'
-icono_salon <- 'fas fa-hospital-alt'
-icono_uci <- 'fas fa-procedures'
+icono_camp_1 <- 'fas fa-hand-holding-water'
+icono_camp_2 <- 'fas fa-fill'
+icono_camp_3 <- 'fas fa-flask'
+icono_camp_4 <- 'fas fa-clipboard-list'
+icono_info1 <- 'fas fa-code'
+icono_info2 <- 'fas fa-cogs'
+icono_info3 <- 'fas fa-edit'
+icono_info4 <- 'fas fa-clipboard-check'
 
 #--------------- Otros parámetros -----------------
 
@@ -50,27 +50,13 @@ caracter_separador <- ','
 ```{r, include=FALSE}
 #--------------- Archivos de datos ----------------
 
-archivo_datos_PNM <- 'https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_02_25_PNM_INFO_COMPLETA.csv'
+archivo_datos_PNM <- 'https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv'
 
 PNM <- 
-  st_read("https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_02_25_PNM_INFO_COMPLETA.csv")
+  st_read("https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv")
 
 ```
 
-```{r, include=FALSE}
-#---------------------- Datos ---------------------
-
-# Objeto sf de cantones
-sf_cantones <- st_read('https://raw.githubusercontent.com/pf0953-programaciongeoespacialr-2020/datos/master/delimitacion-territorial-administrativa/cr/ign/cr_limite_cantonal_ign_wgs84.geojson')
-
-```
-
-```{r, include=FALSE}
-#---------------------- Datos de distritos ---------------------
-# Capa detallada
-# sf_distritos <- st_read('https://raw.githubusercontent.com/pf0953-programaciongeoespacialr-2020/datos/master/delimitacion-territorial-administrativa/cr/ign/cr_distritos_ign_wgs84.geojson')
-
-```
 
 Resumen
 =======================================================================
@@ -83,17 +69,17 @@ Row
 -----------------------------------------------------------------------
 ### código del punto muestreado {.value-box}
 ```{r}
-valueBox(value = paste(format("PS-ESQ-01")), 
+valueBox(("PS-ESQ-01"), 
          caption = "Código del punto de muestreo", 
          icon = icono_camp_1, 
-         color = color_camp_1
+         color = color_info
          )
 ```
 
 ### Campaña 1 {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$positivos, big.mark = ","), "", sep = " "), 
-         caption = "Campaña 1: Agosto 2015", 
+valueBox(("Indice Holandes: 4: Contaminación incipiente"), 
+         caption = "Campaña 1: Agosto 2019", 
          icon = icono_camp_1, 
          color = color_camp_1
          )
@@ -101,34 +87,28 @@ valueBox(value = paste(format(df_general_pais_ultima_fecha$positivos, big.mark =
 
 ### Campaña 2 {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$activos, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$activos / df_general_pais_ultima_fecha$positivos, 1), 
-                       "%)", sep = ""), 
-         caption = "Campaña 2: Noviembre 2015",
-         icon = icono_activos, 
-         color = color_activos
+valueBox(("Indice Holandes: N/A"), 
+         caption = "Campaña 2: Noviembre 2019",
+         icon = icono_camp_2, 
+         color = color_camp_2
          )
 ```
 
 ### Campaña 3 {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$RECUPERADOS, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$RECUPERADOS / df_general_pais_ultima_fecha$positivos, 1), 
-                       "%)", sep = ""), 
-         caption = "Campaña 3: Febrero 2016",
-         icon = icono_recuperados, 
-         color = color_recuperados
+valueBox(("Indice Holandes: N/A"), 
+         caption = "Campaña 3: Febrero 2020",
+         icon = icono_camp_3, 
+         color = color_camp_3
          )
 ```
 
 ### Campaña 4 {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$fallecidos, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$fallecidos / df_general_pais_ultima_fecha$positivos, 1), 
-                       "%)", sep = ""), 
-         caption = "Campaña 4: Mayo 2016",
-         icon = icono_fallecidos, 
-         color = color_fallecidos
+valueBox(("Indice Holandes: 1"), 
+         caption = "Campaña 4: Mayo 2020",
+         icon = icono_camp_4, 
+         color = color_camp_4
          )
 ```
 
@@ -137,86 +117,59 @@ Row
 
 ### Cuerpo de Agua {.value-box}
 ```{r}
-valueBox(("PS-ESQ-01"), 
-         icon = icono_hospitalizados,
-         color = color_hospitalizados
+valueBox(("Piedras Blancas"),
+         caption = "Cuerpo de Agua",
+         icon = icono_info2,
+         color = color_info
          )
 ```
 
 ### Cuenca {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$salon / df_general_pais_ultima_fecha$hospital, 1), 
-                       "%)", sep = ""), 
+valueBox(("Esquinas"), 
          caption = "Cuenca",
-         icon = icono_salon, 
-         color = color_salon
-)
-```
-
-### Ubicación geográfica {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$salon / df_general_pais_ultima_fecha$hospital, 1), 
-                       "%)", sep = ""), 
-         caption = "Ubicación geográfica",
-         icon = icono_salon, 
-         color = color_salon
+         icon = icono_info3, 
+         color = color_info
 )
 ```
 
 ### Coordenadas {.value-box}
 ```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$salon, big.mark = ","), " (",
-                       round(100 * df_general_pais_ultima_fecha$salon / df_general_pais_ultima_fecha$hospital, 1), 
-                       "%)", sep = ""), 
+valueBox(("Latitud: 970837,Longitud: 583319"), 
          caption = "Coordenadas",
-         icon = icono_salon, 
-         color = color_salon
+         icon = icono_info3, 
+         color = color_info
+)
+```
+
+### Ubicación geográfica {.value-box}
+```{r}
+valueBox(("Provincia: Puntarenas / Cantón: Osa / Distrito: Piedras Blancas"), 
+         caption = "Ubicación geográfica",
+         icon = icono_info3, 
+         color = color_info
 )
 ```
 
 Row {data-width=400}
 -----------------------------------------------------------------------
 
-### Mapa de ubicación del punto
+### Mapa de ubicación del punto de muestreo
 ```{r}
 
-paleta_azul <- colorBin(palette = "Blues", 
-                        domain = sf_general_distritos_ultima_fecha$positivos,
-                        bins = 10
-               )
-
-leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>% 
-  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addPolygons(fillColor = ~paleta_azul(positivos), stroke=T, fillOpacity = 1,
-              color="black", weight=0.2, opacity= 0.5,
-              group = "Distritos",
-              popup = paste("Provincia: ", sf_general_distritos_ultima_fecha$provincia, "<br>",
-                            "Distritos: ", sf_general_distritos_ultima_fecha$distrito, "<br>",
-                            "Positivos: ", sf_general_distritos_ultima_fecha$positivos
-                            )
-  ) %>%
-  addLegend("bottomright", pal = paleta_azul, values = ~positivos,
-    title = "Casos positivos", group = "Distritos",
-    opacity = 1
-  ) %>%
+mapa1 <- leaflet() %>%
+  addTiles() %>% 
+  addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes de ESRI") %>% 
+  addMarkers(lng=-83.243, lat=8.779, 
+             popup="PS-ESQ-01"
+  ) %>%  
   addLayersControl(
-    baseGroups = c("OpenStreetMap"),
-    overlayGroups = c("Distritos"),
-    options = layersControlOptions(collapsed = TRUE)
-  ) %>%
-  addScaleBar(
-  ) %>%
-  addMiniMap(
-    toggleDisplay = TRUE,
-    position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik
+    baseGroups = c("OpenStreetMap", "Stamen Toner Lite", "Imágenes de ESRI")
   )
 
 # Despliegue del mapa
-leaflet_distritos
+mapa1
 ```
 
 
@@ -245,50 +198,31 @@ Campaña 1
 =======================================================================
 Row {data-height=1}
 -----------------------------------------------------------------------
-### **Última actualización de datos: `r  df_general_pais_ultima_fecha$FECHA`**
+
 
 
 Row
 -----------------------------------------------------------------------
 
 ### Campaña 1 {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$positivos, big.mark = ","), "", sep = " "), 
-         caption = "Total de casos positivos", 
-         icon = icono_camp_1, 
-         color = color_camp_1
-)
-```
+
 
 Row {data-width=400}
 -----------------------------------------------------------------------
 
-### Mapa de casos positivos en distritos
+### Mapa de puntos monitoreados en la cuenca
 ```{r}
 
-paleta_azul <- colorBin(palette = "Blues", 
-                        domain = sf_general_distritos_ultima_fecha$positivos,
+color_camp_1 <- colorBin(palette = "Blues", 
+                        domain = PNM$Cuenca,
                         bins = 10
                )
 
-leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>% 
+Mapa <- leaflet(PNM) %>% 
   fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addPolygons(fillColor = ~paleta_azul(positivos), stroke=T, fillOpacity = 1,
-              color="black", weight=0.2, opacity= 0.5,
-              group = "Distritos",
-              popup = paste("Provincia: ", sf_general_distritos_ultima_fecha$provincia, "<br>",
-                            "Distritos: ", sf_general_distritos_ultima_fecha$distrito, "<br>",
-                            "Positivos: ", sf_general_distritos_ultima_fecha$positivos
-                            )
-  ) %>%
-  addLegend("bottomright", pal = paleta_azul, values = ~positivos,
-    title = "Casos positivos", group = "Distritos",
-    opacity = 1
-  ) %>%
   addLayersControl(
     baseGroups = c("OpenStreetMap"),
-    overlayGroups = c("Distritos"),
     options = layersControlOptions(collapsed = TRUE)
   ) %>%
   addScaleBar(
@@ -300,274 +234,54 @@ leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>%
   )
 
 # Despliegue del mapa
-leaflet_distritos
+Mapa
 ```
 
-### **Gráfico de distritos con mayor cantidad de casos positivos**
-```{r}
-pastelpositivos <- plot_ly(df_distritos_pastel_positivos,labels = ~ distrito, 
-        values = ~ positivos, 
-        type = "pie", 
-        textposition = 'inside',
-        marker = list(color = color_camp_1)
-) %>%
-layout(title = "Cantidad de casos positivos por distrito", 
-       yaxis = list(title = ""),
-       xaxis = list(title = ""),
-       margin = list(l = 50,
-                     r = 50,
-                     b = 50,
-                     t = 50,
-                     pad = 5
-                )
-)
-pastelpositivos 
-```
+### **Gráfico de resultados campaña 1**
+
 
 
 Campaña 2
 =======================================================================
 Row {data-height=10}
 -----------------------------------------------------------------------
-### **Última actualización de datos realizada el `r  df_general_pais_ultima_fecha$FECHA` con base en los [datos publicados por el Ministerio de Salud de Costa Rica](http://geovision.uned.ac.cr/oges/)**.
+### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
 
 Row
 -----------------------------------------------------------------------
 
-### Casos activos {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$activos, big.mark = ","), "", sep = " "), 
-         caption = "Total de casos activos", 
-         icon = icono_activos, 
-         color = color_activos
-)
-```
+### Campaña 2 {.value-box}
+
 
 Row {data-width=400}
 -----------------------------------------------------------------------
 
-### **Mapa de casos activos en distritos**
-```{r}
+### **Mapa de campaña 2**
 
-paleta_activos <- colorBin(palette = "Reds", 
-                        domain = sf_general_distritos_ultima_fecha$activos,
-                        bins = 10
-               )
 
-leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>% 
-  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addPolygons(fillColor = ~paleta_activos(activos), stroke=T, fillOpacity = 1,
-              color="black", weight=0.2, opacity= 0.5,
-              group = "Distritos",
-              popup = paste("Provincia: ", sf_general_distritos_ultima_fecha$provincia, "<br>",
-                            "Distritos: ", sf_general_distritos_ultima_fecha$distrito, "<br>",
-                            "activos: ", sf_general_distritos_ultima_fecha$activos
-                            )
-  ) %>%
-  addLegend("bottomright", pal = paleta_activos, values = ~activos,
-    title = "Casos activos", group = "Distritos",
-    opacity = 1
-  ) %>%
-  addLayersControl(
-    baseGroups = c("OpenStreetMap"),
-    overlayGroups = c("Distritos"),
-    options = layersControlOptions(collapsed = TRUE)
-  ) %>%
-  addScaleBar(
-  ) %>%
-  addMiniMap(
-    toggleDisplay = TRUE,
-    position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik
-  )
+### **Gráfico de resultados de campaña 2 - Caribe**
 
-# Despliegue del mapa
-leaflet_distritos
-```
-
-### **Gráfico de distritos con mayor cantidad de casos activos**
-```{r}
-pastelactivos <- plot_ly(df_distritos_pastel_activos,labels = ~ distrito, 
-        values = ~ activos, 
-        type = "pie", 
-        textposition = 'inside',
-        marker = list(color = color_activos)
-) %>%
-layout(title = "Cantidad de casos activos por distrito", 
-       yaxis = list(title = ""),
-       xaxis = list(title = ""),
-       margin = list(l = 50,
-                     r = 50,
-                     b = 50,
-                     t = 50,
-                     pad = 5
-                )
-)
-pastelactivos
-```
 
 Campaña 3
 =======================================================================
 Row {data-height=10}
 -----------------------------------------------------------------------
-### **Última actualización de datos realizada el `r  df_general_pais_ultima_fecha$FECHA` con base en los [datos publicados por el Ministerio de Salud de Costa Rica](http://geovision.uned.ac.cr/oges/)**.
+### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
 
 Row
 -----------------------------------------------------------------------
 
-### Casos recuperados {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$RECUPERADOS, big.mark = ","), "", sep = " "), 
-         caption = "Total de casos recuperados", 
-         icon = icono_recuperados, 
-         color = color_recuperados
-)
-```
 
-Row {data-width=400}
------------------------------------------------------------------------
-
-### Mapa de casos recuperados en distritos
-```{r}
-
-paleta_recuperados <- colorBin(palette = "Greens", 
-                        domain = sf_general_distritos_ultima_fecha$recuperados,
-                        bins = 10
-               )
-
-leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>% 
-  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addPolygons(fillColor = ~paleta_recuperados(recuperados), stroke=T, fillOpacity = 1,
-              color="black", weight=0.2, opacity= 0.5,
-              group = "Distritos",
-              popup = paste("Provincia: ", sf_general_distritos_ultima_fecha$provincia, "<br>",
-                            "Distritos: ", sf_general_distritos_ultima_fecha$distrito, "<br>",
-                            "recuperados: ", sf_general_distritos_ultima_fecha$recuperados
-                            )
-  ) %>%
-  addLegend("bottomright", pal = paleta_recuperados, values = ~recuperados,
-    title = "Casos recuperados", group = "Distritos",
-    opacity = 1
-  ) %>%
-  addLayersControl(
-    baseGroups = c("OpenStreetMap"),
-    overlayGroups = c("Distritos"),
-    options = layersControlOptions(collapsed = TRUE)
-  ) %>%
-  addScaleBar(
-  ) %>%
-  addMiniMap(
-    toggleDisplay = TRUE,
-    position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik
-  )
-
-# Despliegue del mapa
-leaflet_distritos
-```
-
-### **Gráfico de distritos con mayor cantidad de casos recuperados**
-```{r}
-pastelrecuperados <- plot_ly(df_distritos_pastel_recuperados,labels = ~ distrito, 
-        values = ~ recuperados, 
-        type = "pie", 
-        textposition = 'inside',
-        marker = list(color = color_recuperados)
-) %>%
-layout(title = "Cantidad de casos recuperados por distrito", 
-       yaxis = list(title = ""),
-       xaxis = list(title = ""),
-       margin = list(l = 50,
-                     r = 50,
-                     b = 50,
-                     t = 50,
-                     pad = 5
-                )
-)
-pastelrecuperados 
-```
 
 Campaña 4
 =======================================================================
 Row {data-height=10}
 -----------------------------------------------------------------------
-### **Última actualización de datos realizada el `r  df_general_pais_ultima_fecha$FECHA` con base en los [datos publicados por el Ministerio de Salud de Costa Rica](http://geovision.uned.ac.cr/oges/)**.
+### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
 
 
 Row
 -----------------------------------------------------------------------
 
-### Casos fallecidos {.value-box}
-```{r}
-valueBox(value = paste(format(df_general_pais_ultima_fecha$fallecidos, big.mark = ","), "", sep = " "), 
-         caption = "Total de casos fallecidos", 
-         icon = icono_fallecidos, 
-         color = color_fallecidos
-)
-```
 
-Row {data-width=400}
------------------------------------------------------------------------
-
-### Mapa de casos fallecidos en distritos
-```{r}
-
-paleta_fallecidos <- colorBin(palette = "Purples", 
-                        domain = sf_general_distritos_ultima_fecha$fallecidos,
-                        bins = 10
-               )
-
-leaflet_distritos <- leaflet(sf_general_distritos_ultima_fecha) %>% 
-  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addPolygons(fillColor = ~paleta_fallecidos(fallecidos), stroke=T, fillOpacity = 1,
-              color="black", weight=0.2, opacity= 0.5,
-              group = "Distritos",
-              popup = paste("Provincia: ", sf_general_distritos_ultima_fecha$provincia, "<br>",
-                            "Distritos: ", sf_general_distritos_ultima_fecha$distrito, "<br>",
-                            "fallecidos: ", sf_general_distritos_ultima_fecha$fallecidos
-                            )
-  ) %>%
-  addLegend("bottomright", pal = paleta_fallecidos, values = ~fallecidos,
-    title = "Casos fallecidos", group = "Distritos",
-    opacity = 1
-  ) %>%
-  addLayersControl(
-    baseGroups = c("OpenStreetMap"),
-    overlayGroups = c("Distritos"),
-    options = layersControlOptions(collapsed = TRUE)
-  ) %>%
-  addScaleBar(
-  ) %>%
-  addMiniMap(
-    toggleDisplay = TRUE,
-    position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik
-  )
-
-# Despliegue del mapa
-leaflet_distritos
-```
-
-### **Gráfico de distritos con mayor cantidad de casos fallecidos**
-```{r}
-pastelfallecidos <- plot_ly(df_distritos_pastel_fallecidos,labels = ~ distrito, 
-        values = ~ fallecidos, 
-        type = "pie", 
-        textposition = 'inside',
-        marker = list(color = color_fallecidos)
-) %>%
-layout(title = "Cantidad de casos fallecidos por distrito", 
-       yaxis = list(title = ""),
-       xaxis = list(title = ""),
-       margin = list(l = 50,
-                     r = 50,
-                     b = 50,
-                     t = 50,
-                     pad = 5
-                )
-)
-pastelfallecidos 
 ```
