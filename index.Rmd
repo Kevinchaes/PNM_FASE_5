@@ -5,7 +5,7 @@ output:
     orientation: rows
     social: menu
     source_code: embed
-    vertical_layout: fill    
+    vertical_layout: scroll    
 ---
 
 ```{r setup, include=FALSE}
@@ -18,7 +18,7 @@ library(dplyr)
 library(tidyr)
 library(sf)
 library(leaflet)
-
+library(rgdal)
 #-------------------- Colores ---------------------
 
 color_camp_1 <- 'blue'
@@ -43,17 +43,51 @@ icono_info4 <- 'fas fa-clipboard-check'
 #--------------- Otros parámetros -----------------
 
 # Separador para lectura de datos CSV
-caracter_separador <- ','
+caracter_separador <- ',' #el formato de sus datos vienen en ; no en coma
 ```
 
 
 ```{r, include=FALSE}
 #--------------- Archivos de datos ----------------
 
-archivo_datos_PNM <- 'https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv'
+archivo_datos_PNM <- read.csv('https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv', sep = ";")
 
-PNM <- 
-  st_read("https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv")
+#PNM <- 
+ # st_read("https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv", options= c()) # st_read es para archivos con informacion espacial como geojson o shp
+
+#convertí aparte la tabla en un shape, es una opción en QGIS y la agrego directamenete y le doy la proyección
+PNM <- st_read("C:\\Users\\Kevin\\Documents\\R\\PNM_FASE_5\\PNM20210415.shp") %>%
+  st_transform(4326) %>%
+  st_make_valid()
+
+#para crear un mapa sería bonito agregar las cuencas y hacer cloropletas
+
+cuencas <- st_read("A:\\SNIT\\Cuencas hidrograficas\\CUencas hidrograficas.shp")%>%
+  st_transform(4326) %>%
+  st_make_valid()
+
+names(archivo_datos_PNM)[1] <- "nombre" #cambia el nombre de la columna cuencas para que coincida con la del shp de cuencas
+
+#buscar y reemplazar para que coincidan los nombres entre ambas bases 
+archivo_datos_PNM$nombre <- gsub("Baru", "Barú", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Chirripo", "Chirripó", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Curen/a", "Cureña", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Frio", "Río Frío", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Grande de Terraba", "Térraba", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Jesus Maria", "Jesús María", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Moin", "Moín", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Peninsula de Nicoya", "Península de Nicoya", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Peninsula de Osa", "Península de Osa", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Reventazon", "Reventazón", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Sarapiqui", "Sarapiquí", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Tarcoles", "Tárcoles", archivo_datos_PNM$nombre)
+archivo_datos_PNM$nombre <- gsub("Estrella", "La Estrella", archivo_datos_PNM$nombre)
+
+
+#interseca los puntos con el shape para mezclar la información
+
+sf_datos <- inner_join(cuencas, archivo_datos_PNM,  by = "nombre")
+
 
 ```
 
@@ -69,10 +103,10 @@ Row
 -----------------------------------------------------------------------
 ### código del punto muestreado {.value-box}
 ```{r}
-valueBox(("PS-ESQ-01"), 
+valueBox(value = paste(format(archivo_datos_PNM[41,3])),
          caption = "Código del punto de muestreo", 
          icon = icono_camp_1, 
-         color = color_info
+         color = color_camp_2
          )
 ```
 
@@ -194,94 +228,63 @@ muestreo se deberá repetir por una vez, en un período no mayor a 30 días natu
 **Nota:** Para mayor información sobre el monitoreo de la calidad de los cuerpos de agua superficiales, escríbanos al correo: daguas@da.go.cr 
 
 
-Campaña 1
+Mi idea
 =======================================================================
-Row {data-height=1}
+Row {data-height=700}
 -----------------------------------------------------------------------
-
-
-
-Row
------------------------------------------------------------------------
-
-### Campaña 1 {.value-box}
-
-
-Row {data-width=400}
------------------------------------------------------------------------
-
-### Mapa de puntos monitoreados en la cuenca
+### Distribución espacial de registros
 ```{r}
 
-color_camp_1 <- colorBin(palette = "Blues", 
-                        domain = PNM$Cuenca,
-                        bins = 10
-               )
-
-Mapa <- leaflet(PNM) %>% 
+leaflet() %>%
   fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%
-  addLayersControl(
-    baseGroups = c("OpenStreetMap"),
-    options = layersControlOptions(collapsed = TRUE)
-  ) %>%
-  addScaleBar(
-  ) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Open StreeT Map") %>%
+  addTiles(urlTemplate ="https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G", attribution = 'Google', group = "Google Maps") %>%
+  addMarkers(data= PNM, group = "PNM",
+             popup = paste(
+               "Sitio de muestreo: ", PNM$Sitio.de.M, "<br>",
+               "Código: ", PNM$Codigo, "<br>",
+               "Cuerpo de agua: ", PNM$Cuerpo.de, "<br>",
+               "Cuenca: ", PNM$Cuenca, "<br>",
+               "Responsable de muestreo: ", PNM$Responsabl, "<br>",
+               "Cuenca: ", PNM$Cuenca, "<br>",
+               "Provincia: ", PNM$Provincia, "<br>",
+               "Cantón: ", PNM$Canton, "<br>",
+               "Distrito: ", PNM$Distrito, "<br>")) %>%
+  addPolygons(
+    data = sf_datos,
+    stroke=T, fillOpacity = 0,
+    color="red", weight=0.8, opacity= 2.0,
+    group = "Cuencas",
+    popup = paste(
+      "Cuenca: ", sf_datos$nombre, "<br>",
+      "Provincia: ", sf_datos$Provincia, "<br>",
+      "Cantón: ", sf_datos$Canton, "<br>",
+      "Distrito: ", sf_datos$Distrito, "<br>")) %>%
+  addLayersControl(baseGroups = c("Google Maps", "OpenStreetMap"),
+                   overlayGroups = c("PNM", "Cuencas"),
+                   options = layersControlOptions(collapsed = TRUE))  %>%
+  addScaleBar()  %>%
+  hideGroup(c("Cuencas")) %>%
   addMiniMap(
     toggleDisplay = TRUE,
     position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik
-  )
-
-# Despliegue del mapa
-Mapa
-```
-
-### **Gráfico de resultados campaña 1**
-
-
-
-Campaña 2
-=======================================================================
-Row {data-height=10}
------------------------------------------------------------------------
-### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
-
-Row
------------------------------------------------------------------------
-
-### Campaña 2 {.value-box}
-
-
-Row {data-width=400}
------------------------------------------------------------------------
-
-### **Mapa de campaña 2**
-
-
-### **Gráfico de resultados de campaña 2 - Caribe**
-
-
-Campaña 3
-=======================================================================
-Row {data-height=10}
------------------------------------------------------------------------
-### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
-
-Row
------------------------------------------------------------------------
-
-
-
-Campaña 4
-=======================================================================
-Row {data-height=10}
------------------------------------------------------------------------
-### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
-
-
-Row
------------------------------------------------------------------------
-
+    tiles = providers$OpenStreetMap.Mapnik)
 
 ```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+
+### Tabla de información 
+
+```{r}
+sf_datos %>%
+  st_drop_geometry() %>%
+  select(Cuenca = nombre, Código = Codigo, "Cuerpo de agua" = Cuerpo.de.Agua, "Responsable del muestreo" = Responsable.del.muestreo, Provincia = Provincia, Cantón = Canton, Distrito = Distrito) %>%
+  DT::datatable(rownames = FALSE,
+                options = list(searchHighlight = TRUE, 
+                               language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+                ))
+```
+
