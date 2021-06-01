@@ -1,5 +1,5 @@
 ---
-title: "MONITOREO DE LA CALIDAD DEL AGUA SUPERFICIAL (ETAPA I)"
+title: "Reventazón basin: drought monitor using time series"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -19,272 +19,72 @@ library(tidyr)
 library(sf)
 library(leaflet)
 library(rgdal)
-#-------------------- Colores ---------------------
+library(hydroTSM)
+library(drought)
+library(lfstat)
+library(raster)
 
-color_camp_1 <- 'blue'
-color_camp_2 <- 'red'
-color_camp_3 <- 'green'
-color_camp_4 <- 'purple'
-
-color_info <- 'pink'
-
-
-#--------------------- Íconos ---------------------
-
-icono_camp_1 <- 'fas fa-hand-holding-water'
-icono_camp_2 <- 'fas fa-fill'
-icono_camp_3 <- 'fas fa-flask'
-icono_camp_4 <- 'fas fa-clipboard-list'
-icono_info1 <- 'fas fa-code'
-icono_info2 <- 'fas fa-cogs'
-icono_info3 <- 'fas fa-edit'
-icono_info4 <- 'fas fa-clipboard-check'
-
-#--------------- Otros parámetros -----------------
-
-# Separador para lectura de datos CSV
-caracter_separador <- ',' #el formato de sus datos vienen en ; no en coma
 ```
 
 
 ```{r, include=FALSE}
 #--------------- Archivos de datos ----------------
 
-archivo_datos_PNM <- read.csv('https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv', sep = ";")
+timeseries<-read.csv("E:/Hype data/Streamflow_daily_mm.csv")
 
-#PNM <- 
- # st_read("https://raw.githubusercontent.com/EsmeVar/PNM_FASE_5/main/2021_04_15_PNM_INFO_COMPLETA.csv", options= c()) # st_read es para archivos con informacion espacial como geojson o shp
+times<- subset(timeseries, select= c(1, 2, 3, 4, 5, 7, 9, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 27, 28, 34, 35, 37, 49, 50, 54, 63, 64, 65, 66, 67, 68, 77, 84, 88, 93, 94, 107, 108, 145, 146, 149, 158, 177, 221, 337, 338, 342, 370, 371, 384, 385, 393, 399, 418, 419, 436, 437, 462, 506, 507, 525, 526, 549, 550, 551 ))
 
-#convertí aparte la tabla en un shape, es una opción en QGIS y la agrego directamenete y le doy la proyección
-PNM <- st_read("C:\\Users\\Kevin\\Documents\\R\\PNM_FASE_5\\PNM20210415.shp") %>%
-  st_transform(4326) %>%
-  st_make_valid()
+names(times) <- c(1, 2, 3, 4, 5, 7, 9, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 27, 28, 34, 35, 37, 49, 50, 54, 63, 64, 65, 66, 67, 68, 77, 84, 88, 93, 94, 107, 108, 145, 146, 149, 158, 177, 221, 337, 338, 342, 370, 371, 384, 385, 393, 399, 418, 419, 436, 437, 462, 506, 507, 525, 526, 549, 550, 551 )
 
-#para crear un mapa sería bonito agregar las cuencas y hacer cloropletas
-
-cuencas <- st_read("A:\\SNIT\\Cuencas hidrograficas\\CUencas hidrograficas.shp")%>%
-  st_transform(4326) %>%
-  st_make_valid()
-
-names(archivo_datos_PNM)[1] <- "nombre" #cambia el nombre de la columna cuencas para que coincida con la del shp de cuencas
-
-#buscar y reemplazar para que coincidan los nombres entre ambas bases 
-archivo_datos_PNM$nombre <- gsub("Baru", "Barú", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Chirripo", "Chirripó", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Curen/a", "Cureña", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Frio", "Río Frío", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Grande de Terraba", "Térraba", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Jesus Maria", "Jesús María", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Moin", "Moín", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Peninsula de Nicoya", "Península de Nicoya", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Peninsula de Osa", "Península de Osa", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Reventazon", "Reventazón", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Sarapiqui", "Sarapiquí", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Tarcoles", "Tárcoles", archivo_datos_PNM$nombre)
-archivo_datos_PNM$nombre <- gsub("Estrella", "La Estrella", archivo_datos_PNM$nombre)
-
-
-#interseca los puntos con el shape para mezclar la información
-
-sf_datos <- inner_join(cuencas, archivo_datos_PNM,  by = "nombre")
+times<- read.zoo(timeseries, header = TRUE)
 
 
 ```
 
-
-Resumen
+Upstream
 =======================================================================
-Row {data-height=10}
------------------------------------------------------------------------
-### **Última actualización de datos realizada el 25 de febrero de 2021 con base en los [datos publicados por la Dirección de de Agua del Ministerio de Ambiente y Energía de Costa Rica](http://mapas.da.go.cr/mapnew.php)**.
 
-
-Row
------------------------------------------------------------------------
-### código del punto muestreado {.value-box}
-```{r}
-valueBox(value = paste(format(archivo_datos_PNM[41,3])),
-         caption = "Código del punto de muestreo", 
-         icon = icono_camp_1, 
-         color = color_camp_2
-         )
-```
-
-### Campaña 1 {.value-box}
-```{r}
-valueBox(("Indice Holandes: 4: Contaminación incipiente"), 
-         caption = "Campaña 1: Agosto 2019", 
-         icon = icono_camp_1, 
-         color = color_camp_1
-         )
-```
-
-### Campaña 2 {.value-box}
-```{r}
-valueBox(("Indice Holandes: N/A"), 
-         caption = "Campaña 2: Noviembre 2019",
-         icon = icono_camp_2, 
-         color = color_camp_2
-         )
-```
-
-### Campaña 3 {.value-box}
-```{r}
-valueBox(("Indice Holandes: N/A"), 
-         caption = "Campaña 3: Febrero 2020",
-         icon = icono_camp_3, 
-         color = color_camp_3
-         )
-```
-
-### Campaña 4 {.value-box}
-```{r}
-valueBox(("Indice Holandes: 1"), 
-         caption = "Campaña 4: Mayo 2020",
-         icon = icono_camp_4, 
-         color = color_camp_4
-         )
-```
-
-Row
------------------------------------------------------------------------
-
-### Cuerpo de Agua {.value-box}
-```{r}
-valueBox(("Piedras Blancas"),
-         caption = "Cuerpo de Agua",
-         icon = icono_info2,
-         color = color_info
-         )
-```
-
-### Cuenca {.value-box}
-```{r}
-valueBox(("Esquinas"), 
-         caption = "Cuenca",
-         icon = icono_info3, 
-         color = color_info
-)
-```
-
-### Coordenadas {.value-box}
-```{r}
-valueBox(("Latitud: 970837,Longitud: 583319"), 
-         caption = "Coordenadas",
-         icon = icono_info3, 
-         color = color_info
-)
-```
-
-### Ubicación geográfica {.value-box}
-```{r}
-valueBox(("Provincia: Puntarenas / Cantón: Osa / Distrito: Piedras Blancas"), 
-         caption = "Ubicación geográfica",
-         icon = icono_info3, 
-         color = color_info
-)
-```
-
-Row {data-width=400}
------------------------------------------------------------------------
-
-### Mapa de ubicación del punto de muestreo
-```{r}
-
-mapa1 <- leaflet() %>%
-  addTiles() %>% 
-  addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") %>%
-  addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes de ESRI") %>% 
-  addMarkers(lng=-83.243, lat=8.779, 
-             popup="PS-ESQ-01"
-  ) %>%  
-  addLayersControl(
-    baseGroups = c("OpenStreetMap", "Stamen Toner Lite", "Imágenes de ESRI")
-  )
-
-# Despliegue del mapa
-mapa1
-```
-
-
-### **Información de los datos publicados**
-**1. El monitoreo de los cuerpos de agua superficiales y la clasificación de su calidad se realizó según:**
-
-- Decreto N° 33903-MINAE-S. REGLAMENTO PARA LA EVALUACIÓN Y CLASIFICACION DE LA CALIDAD DE CUERPOS DE AGUA SUPERFICIALES.
-
-- Plan nacional de monitoreo de la calidad de los cuerpos de agua superficiales.
-
-- Programa nacional de monitoreo de la calidad de los cuerpos de agua del país.
-<br>
-<br>
-
-**2. Para una mejor interpretación de los resultados, se aclara:**
-
-Según el artículo 20 del Decreto N° 33903-MINAE-S, en aquellos casos en que el valor del Índice de Clasificación Holandés y el valor del Índice Biológico presenten una diferencia de más de una clase entre ellos, el
-muestreo se deberá repetir por una vez, en un período no mayor a 30 días naturales. En caso de que se mantenga la diferencia de clases se clasifica en la de menor calidad.
-<br>
-<br>
-
-**Nota:** Para mayor información sobre el monitoreo de la calidad de los cuerpos de agua superficiales, escríbanos al correo: daguas@da.go.cr 
-
-
-Mi idea
-=======================================================================
 Row {data-height=700}
------------------------------------------------------------------------
-### Distribución espacial de registros
+-------------------------------------
+### Upstream treshold from Reventazón basin (Threshold Level Method)
 ```{r}
 
-leaflet() %>%
-  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
-  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Open StreeT Map") %>%
-  addTiles(urlTemplate ="https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G", attribution = 'Google', group = "Google Maps") %>%
-  addMarkers(data= PNM, group = "PNM",
-             popup = paste(
-               "Sitio de muestreo: ", PNM$Sitio.de.M, "<br>",
-               "Código: ", PNM$Codigo, "<br>",
-               "Cuerpo de agua: ", PNM$Cuerpo.de, "<br>",
-               "Cuenca: ", PNM$Cuenca, "<br>",
-               "Responsable de muestreo: ", PNM$Responsabl, "<br>",
-               "Cuenca: ", PNM$Cuenca, "<br>",
-               "Provincia: ", PNM$Provincia, "<br>",
-               "Cantón: ", PNM$Canton, "<br>",
-               "Distrito: ", PNM$Distrito, "<br>")) %>%
-  addPolygons(
-    data = sf_datos,
-    stroke=T, fillOpacity = 0,
-    color="red", weight=0.8, opacity= 2.0,
-    group = "Cuencas",
-    popup = paste(
-      "Cuenca: ", sf_datos$nombre, "<br>",
-      "Provincia: ", sf_datos$Provincia, "<br>",
-      "Cantón: ", sf_datos$Canton, "<br>",
-      "Distrito: ", sf_datos$Distrito, "<br>")) %>%
-  addLayersControl(baseGroups = c("Google Maps", "OpenStreetMap"),
-                   overlayGroups = c("PNM", "Cuencas"),
-                   options = layersControlOptions(collapsed = TRUE))  %>%
-  addScaleBar()  %>%
-  hideGroup(c("Cuencas")) %>%
-  addMiniMap(
-    toggleDisplay = TRUE,
-    position = "bottomleft",
-    tiles = providers$OpenStreetMap.Mapnik)
+drought <- find_droughts(times[,1], threshold = "Q80")
+plot(drought)
 
 ```
 
-Row {data-height=500}
------------------------------------------------------------------------
+Upstream 5m
+=======================================================================
 
-
-### Tabla de información 
-
+Row {data-height=700}
+-------------------------------------
+### Upstream treshold from Reventazón basin (Threshold Level Method 5 days)
 ```{r}
-sf_datos %>%
-  st_drop_geometry() %>%
-  select(Cuenca = nombre, Código = Codigo, "Cuerpo de agua" = Cuerpo.de.Agua, "Responsable del muestreo" = Responsable.del.muestreo, Provincia = Provincia, Cantón = Canton, Distrito = Distrito) %>%
-  DT::datatable(rownames = FALSE,
-                options = list(searchHighlight = TRUE, 
-                               language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
-                ))
+days5 <- pool_it(drought,  tmin= 5)
+plot(days5)
 ```
 
+Donwstream
+=======================================================================
+
+Row {data-height=700}
+-------------------------------------
+### Downstream treshold from Reventazón basin (Threshold Level Method)
+```{r}
+
+drought1 <- find_droughts(times[,418], threshold = "Q80")
+plot(drought1)
+
+```
+
+Donwstream 5m
+=======================================================================
+
+Row {data-height=700}
+-------------------------------------
+### Downstream treshold from Reventazón basin (Threshold Level Method 5 days)
+```{r}
+days51 <- pool_it(drought,  tmin= 5)
+plot(days51)
+```
