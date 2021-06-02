@@ -23,6 +23,8 @@ library(hydroTSM)
 library(drought)
 library(lfstat)
 library(raster)
+library(SPEI)
+
 
 ```
 
@@ -39,19 +41,108 @@ names(times) <- c(1, 2, 3, 4, 5, 7, 9, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 2
 times<- read.zoo(timeseries, header = TRUE)
 
 
+shape.path <- "C:\\Users\\Kevin\\Documents\\OneDrive - ucr.ac.cr\\Maestria\\Sequia y escazes de agua\\Reventazon\\Shapes\\Reventazon basin\\reventazonwgs84.shp"
+shape <-sf::st_read(shape.path) %>%
+  st_transform(4326) %>%
+  st_make_valid()
+
+subwater <- sf::st_read("C:\\Users\\Kevin\\Documents\\OneDrive - ucr.ac.cr\\Maestria\\Sequia y escazes de agua\\Reventazon\\Shapes\\subwatershed\\subwatersheds.shp")%>%
+  st_transform(4326) %>%
+  st_make_valid()
+
+points <- st_read("C:/Users/Kevin/Documents/OneDrive - ucr.ac.cr/Maestria/Sequia y escazes de agua/Reventazon/Points/point.shp")
+
+############just some basins#################
+basins <- subset(timeseries, select=c(1, 2, 371, 525))
+names(basins) <- c("dates", "upstream", "middle", "down")
+basins <- read.zoo(basins, header = TRUE)
+
+
+#################SDI##################
+
+timeseries_mon= daily2monthly(times, FUN = sum)
+
+fit <- lapply(timeseries_mon, drought::SDI, ts=3)
+
+upstream <- fit$X2$SDI
+middle <- fit$X371$SDI
+down <- fit$X438$SDI
+
+upstream <- matrix(t(upstream),ncol=1)
+
+middle <- matrix(t(middle),ncol=1)
+
+down <- matrix(t(down),ncol=1)
+
+upstream.sdi <- zoo(upstream, index(timeseries_mon))
+middle.sdi <- zoo(middle, index(timeseries_mon))
+down.sdi <- zoo(down, index(timeseries_mon))
+
+SDI <- cbind.zoo(upstream.sdi, middle.sdi, down.sdi)
+
+data <- read.csv("data.csv")
+dates <- mip("2003-01-01", "2020-12-31")
+values <- zoo(data, dates)
+names(values) <- c(1,2,3,4,5,6,7,8)
+
+
+#SPI-3
+spi3 <- spi(values, scale = 3, distribution = "Gamma",
+                  fit = "ub-pwm")
+
+#SPI-12
+spi12 <- spi(values, scale = 12, distribution = "Gamma",
+                   fit = "ub-pwm")
+
+drought <- find_droughts(times[,1], threshold = "Q95", varying = "monthly")
+
+days51 <- pool_it(drought,  tmin= 5)
+
+days5 <- pool_it(drought,  tmin= 5)
+
+drought1 <- find_droughts(times[,418], threshold = "Q95", varying = "monthly")
 ```
 
-Upstream
+Graphs
+=======================================================================
+Row
+-------------------------------------
+### Area of interest
+```{r}
+ggplot(shape)+
+  geom_sf() + 
+  coord_sf()+
+  geom_point(data=points, aes(x=x, y=y, group=fid))+
+  geom_text(data=points, aes(x=x, y=y, label=fid), hjust=0.1, vjust=-0.5, size=4)+
+  theme_classic()
+```
+Row
+-------------------------------------
+### SPI-3
+```{r}
+plot(spi3)
+```
+Row
+-------------------------------------
+### SPI-12
+```{r}
+plot(spi12)
+```
+Row
+-------------------------------------
+### SDI
+```{r}
+plot(SDI, col= "blue")
+```
+
+Upstream Q95
 =======================================================================
 
 Row {data-height=700}
 -------------------------------------
 ### Upstream treshold from Reventazón basin (Threshold Level Method)
 ```{r}
-
-drought <- find_droughts(times[,1], threshold = "Q80")
 plot(drought)
-
 ```
 
 Upstream 5m
@@ -61,21 +152,17 @@ Row {data-height=700}
 -------------------------------------
 ### Upstream treshold from Reventazón basin (Threshold Level Method 5 days)
 ```{r}
-days5 <- pool_it(drought,  tmin= 5)
 plot(days5)
 ```
 
-Donwstream
+Donwstream Q95
 =======================================================================
 
 Row {data-height=700}
 -------------------------------------
 ### Downstream treshold from Reventazón basin (Threshold Level Method)
 ```{r}
-
-drought1 <- find_droughts(times[,418], threshold = "Q80")
 plot(drought1)
-
 ```
 
 Donwstream 5m
@@ -85,6 +172,34 @@ Row {data-height=700}
 -------------------------------------
 ### Downstream treshold from Reventazón basin (Threshold Level Method 5 days)
 ```{r}
-days51 <- pool_it(drought,  tmin= 5)
 plot(days51)
+```
+
+Reventazón subwatersheds
+=======================================================================
+```{r}
+
+leaflet(subwater) %>%
+  fitBounds(lng1 = -86, lng2 = -82, lat1 = 8, lat2 = 11) %>%
+  addTiles(urlTemplate ="https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G", attribution = 'Google', group = "Google Maps") %>%
+  addPolygons(stroke=T, fillOpacity = 0,
+    color="blue", weight=0.8, opacity= 2.0,
+    group = "Subwatersheds",
+    popup = paste(
+      "Elevation: ", subwater$Elevation, "<br>",
+      "Slope: ", subwater$Slope_perc, "<br>",
+      "Area m2: ", subwater$Area_m2, "<br>",
+      "Streamflow: ", subwater$Streamflow, "<br>",
+      "Baseflow:", subwater$Baseflow_I, "<br>",
+      "Eto index:", subwater$Evaporativ, "<br>",
+      "Aridity index:", subwater$Aridity_In, "<br>")) %>%
+  addLayersControl(baseGroups = "Google Maps",
+                   overlayGroups = "Subwatersheds",
+                   options = layersControlOptions(collapsed = TRUE))  %>%
+  addScaleBar()  %>%
+  addMiniMap(
+    toggleDisplay = TRUE,
+    position = "bottomleft",
+    tiles = providers$OpenStreetMap.Mapnik)
+
 ```
